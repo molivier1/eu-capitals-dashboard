@@ -20,3 +20,12 @@ The score would be affected as it depends on the dataset.
 
 ## Reflection — predict, then check
 It would be Lisbon or Valleta
+
+
+## Reflection — was your prediction right?
+My predictions were pretty close to the recommended locations.
+It tells me that my insight on the problem may be somewhat correct although it has to be a better way.
+
+
+## Reflection — monitoring (CM4)
+There's a "Data last updated" section. It is pretty good but too small to be noticed.

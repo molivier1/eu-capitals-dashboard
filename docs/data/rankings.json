@@ -1,4 +1,5 @@
 {
+  "dest_city": "no_city",
   "generated_at": "not yet generated",
   "emissions_factor_kg_per_km": 0.15,
   "destinations": []

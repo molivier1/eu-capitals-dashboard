@@ -12,7 +12,7 @@
 </style>
 </head>
 <body>
-  <h1>Best EU capital to visit next week, from Paris</h1>
+  <h1 id="replace-city">Best EU capital to visit next week, from Paris</h1>
   <p>Ranked by weather quality and CO&#8322; emissions of getting there — flight price is
      deliberately not a factor.</p>
   <div id="recommendation">Loading...</div>
@@ -24,6 +24,8 @@
 fetch('data/rankings.json')
   .then(r => r.json())
   .then(data => {
+    document.getElementById('replace-city').textContent = `Best EU capital to visit next week, from ${data.dest_city}`;
+
     const dest = data.destinations;
 
     if (!dest || dest.length === 0) {
