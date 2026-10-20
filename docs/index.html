@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>EU capitals — sustainable vacation ranking</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+  #recommendation { padding: 1rem; border: 2px solid #0d7c9e; border-radius: 8px; }
+  canvas { margin-top: 2rem; }
+  #updated { color: #666; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+  <h1>Best EU capital to visit next week, from Paris</h1>
+  <p>Ranked by weather quality and CO&#8322; emissions of getting there — flight price is
+     deliberately not a factor.</p>
+  <div id="recommendation">Loading...</div>
+  <canvas id="rankChart" height="320"></canvas>
+  <canvas id="scatterChart" height="320"></canvas>
+  <p id="updated"></p>
+
+<script>
+fetch('data/rankings.json')
+  .then(r => r.json())
+  .then(data => {
+    const dest = data.destinations;
+
+    if (!dest || dest.length === 0) {
+      document.getElementById('recommendation').innerHTML =
+        '<p>No ranking data yet. The automated workflow hasn\'t completed a run ' +
+        'yet -- trigger it once from the repo\'s Actions tab ("Run workflow"), ' +
+        'then reload this page.</p>';
+      document.getElementById('updated').textContent = 'Status: ' + data.generated_at;
+      return;
+    }
+
+    const top = dest[0];
+
+    document.getElementById('recommendation').innerHTML =
+      `<h2>Recommended: ${top.capital}, ${top.country}</h2>` +
+      `<p>Weather score ${top.weather_score.toFixed(2)}, CO&#8322; score ` +
+      `${top.co2_score.toFixed(2)} (${top.co2_kg_roundtrip} kg CO&#8322;e round trip, ` +
+      `${top.distance_km} km each way).</p>`;
+
+    document.getElementById('updated').textContent =
+      `Data last updated ${data.generated_at} -- emissions factor ` +
+      `${data.emissions_factor_kg_per_km} kg CO2e/passenger-km.`;
+
+    // Green (best) to red (worst) colour spectrum, shared by both charts, based
+    // on each destination's final_score relative to the others actually present.
+    function scoreToColor(t) {
+      const clamped = Math.max(0, Math.min(1, t));
+      const hue = 120 * clamped; // 0 = red, 120 = green
+      return `hsl(${hue.toFixed(0)}, 70%, 45%)`;
+    }
+    function normalizeForColor(values) {
+      const lo = Math.min(...values);
+      const hi = Math.max(...values);
+      if (hi === lo) return values.map(() => 0.5);
+      return values.map(v => (v - lo) / (hi - lo));
+    }
+    const scoreNorm = normalizeForColor(dest.map(d => d.final_score));
+    const spectrumColors = scoreNorm.map(t => scoreToColor(t));
+
+    new Chart(document.getElementById('rankChart'), {
+      type: 'bar',
+      data: {
+        labels: dest.map(d => d.capital),
+        datasets: [{
+          label: 'Final score',
+          data: dest.map(d => d.final_score),
+          backgroundColor: spectrumColors
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { display: false },
+          title: { display: true, text: 'Ranking, all 26 destinations (green = best, red = worst)' },
+          tooltip: {
+            callbacks: {
+              title: (items) => {
+                const d = dest[items[0].dataIndex];
+                return `${d.capital}, ${d.country}`;
+              },
+              label: (item) => `Final score: ${item.parsed.y.toFixed(3)}`
+            }
+          }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('scatterChart'), {
+      type: 'scatter',
+      data: {
+        datasets: [{
+          label: 'Weather vs CO2 (top-left is best)',
+          data: dest.map(d => ({ x: 1 - d.co2_score, y: d.weather_score })),
+          backgroundColor: spectrumColors,
+          pointRadius: 9,
+          pointHoverRadius: 13
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { display: false },
+          title: { display: true, text: 'Trade-off: CO2 emissions vs weather quality (green = best overall, red = worst)' },
+          tooltip: {
+            callbacks: {
+              label: (item) => {
+                const d = dest[item.dataIndex];
+                return `${d.capital}, ${d.country}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { title: { display: true, text: 'CO2 emissions (normalized, lower = better)' } },
+          y: { title: { display: true, text: 'Weather score (higher = better)' } }
+        }
+      }
+    });
+  })
+  .catch(err => {
+    document.getElementById('recommendation').innerHTML =
+      '<p>Could not load ranking data (' + err + '). Check that ' +
+      '<code>docs/data/rankings.json</code> exists in the repo and that GitHub ' +
+      'Pages is serving from the <code>/docs</code> folder.</p>';
+  });
+</script>
+</body>
+</html>
