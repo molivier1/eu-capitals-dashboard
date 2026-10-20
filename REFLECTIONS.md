@@ -29,3 +29,9 @@ It tells me that my insight on the problem may be somewhat correct although it h
 
 ## Reflection — monitoring (CM4)
 There's a "Data last updated" section. It is pretty good but too small to be noticed.
+
+
+## Reflection — the unguided step*
+I edited the script, I added a constant for the name of the new City and changed the lat and lon.
+Then I added in the ranking the name of the city so it can be read from the HTML file to display in the title (instead of Paris).
+The best destination depends on when you start from.
