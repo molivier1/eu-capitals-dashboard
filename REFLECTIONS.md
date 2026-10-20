@@ -16,3 +16,7 @@ Check its sources and if it is still up to date.
 ## Reflection — relative vs. absolute
 I don't see why or how it could affect a mediocre capital's temperature.
 The score would be affected as it depends on the dataset.
+
+
+## Reflection — predict, then check
+It would be Lisbon or Valleta
